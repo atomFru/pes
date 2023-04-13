@@ -1,0 +1,162 @@
+<?php
+	if(! defined('BASEPATH') ){ exit('Unable to view file.'); }
+	if(isset($_GET['user_id'])){
+	    $user_id = $_GET['user_id'];
+	    if($user_id != $data['id']){
+        redirect("index.php");
+}
+	} 
+
+if(isset($_GET['accept'])){
+		$job_id = $db->EscapeString($_GET['accept']);
+		$job = $db->QueryFetchArray("SELECT * FROM `jobs_done` WHERE `id`='".$job_id."' LIMIT 1");
+		
+	    $user_id = $job['uid'];
+	    $job_id_two = $job['job_id'];
+	    $reward = $job['reward'];
+	    $admin_reward = (20/100) * $reward;
+	    $user_reward = (80/100) * $reward;
+	    $admin_id = 1;
+	    
+	    $jobs = $db->QueryFetchArray("SELECT * FROM `jobs` WHERE `id`='".$job_id_two."' LIMIT 1");
+        $employer = $jobs['user_job_id'];
+        
+        
+        $db->Query("UPDATE `users` SET `coins`=`coins`-'".$job['reward']."' WHERE `id`='".$employer."'");
+        $db->Query("UPDATE `users` SET `coins`=`coins`+'".$user_reward."' WHERE `id`='".$user_id."'");
+        $db->Query("UPDATE `users` SET `coins`=`coins`+'".$admin_reward."' WHERE `id`='".$admin_id."'");
+
+	    
+	  
+	  
+
+		
+
+// 		$db->Query("UPDATE `users` SET `coins`=`coins`+'".$job['reward']."' WHERE `id`='".$job['uid']."'");
+			
+		
+		
+		$db->Query("UPDATE `jobs_done` SET `status`='1' WHERE `id`='".$job_id."'");
+		$errMessage = '<div class="alert success"><span class="icon"></span><strong>SUCCESS:</strong> Job was successfully approved!</div>';
+		redirect("?page=completed_job&job_accepted");
+
+
+	}elseif(isset($_GET['reject'])){
+		$job_id = $db->EscapeString($_GET['reject']);
+		$db->Query("UPDATE `jobs_done` SET `status`='2' WHERE `id`='".$job_id."'");
+		$errMessage = '<div class="alert success"><span class="icon"></span><strong>SUCCESS:</strong> Job was successfully rejected!</div>';
+	}
+    else if(isset($_GET['job_accepted'])){
+        $errMessage = '<div class="alert success"><span class="icon"></span><strong>SUCCESS:</strong> Job was successfully approved!</div>';
+
+    }
+    
+    ?>
+
+<main role="main" class="container">
+      <div class="row">
+        <?php 
+            require_once(BASE_PATH.'/template/'.$config['theme'].'/common/sidebar.php');
+        ?>
+        <div class="col-md-9">
+            
+            <div class="my-3 p-3 bg-white rounded box-shadow box-style">
+				<?=$errMessage?>
+                <div id="blue-box">
+                    <div class="title">
+                        <?=$lang['b_403']?>
+                    </div>
+                    <div class="content">
+                        <div class="text-center bt-5" style="margin-bottom: 15px;">
+                            <a style="width:150px" href="?page=jobs" class="btn btn-primary">View All Jobs</a>
+                            <a style="width:150px" href="?page=add_job" class="btn btn-primary">Add Jobs</a>
+                            <a style="width:150px" href="?page=view_job" class="btn btn-primary">View My Jobs</a>
+                            <a style="width:150px" href="?page=jobs_did" class="btn btn-primary">Jobs I did</a>
+                            <a style="width:150px" href="?page=completed_job" class="btn btn-primary">Completed Job</a>
+                        </div>
+                    </div>
+            	<table class="table table-bordered table-hover">
+				<thead>
+					<tr>
+						<th width="10">#</th>
+						<th>User Id</th>
+						<th>Job ID</th>
+						<th>Job Requirement</th>
+						<th>Reward</th>
+						<th>Status</th>
+						<th>Time</th>
+						<th>Accept</th>
+						<th>Reject</th>
+
+					</tr>
+				</thead>
+				<tbody>
+					<?php
+						$page = (isset($_GET['p']) ? $_GET['p'] : 0);
+						$limit = 20;
+						$start = (is_numeric($page) && $page > 0 ? ($page-1)*$limit : 0);
+
+						$total_pages = $db->QueryGetNumRows("SELECT `id` FROM `jobs_done`");
+						include_once('../system/libs/apaginate.php');
+						if(isset($_GET['job_id'])){
+						 $id = $_GET['job_id'];
+
+						
+						$jobs = $db->QueryFetchArrayAll("SELECT * FROM `jobs_done` WHERE `job_id`='".$id."'");
+						}	else{
+					    
+					    $jobs = $db->QueryFetchArrayAll("SELECT * FROM `jobs_done` WHERE `employer_id`='".$data['id']."'");
+
+					    
+					}
+					
+
+						
+						if(count($jobs) == 0) {
+							echo '<tr><td colspan="9" style="text-align: center">Nothing here yet!</td></tr>';
+						}
+
+						foreach($jobs as $job){
+						$user_id = $job['uid'];
+						$users = $db->QueryFetchArrayAll("SELECT * FROM `users` WHERE `id`='".$user_id."'");
+						$username = $users['login'];
+						$status = $job['status'];
+						
+						foreach($users as $user){
+						    $username = $user['login'];
+
+						}
+
+					?>	
+					<tr>
+						<td><?=$job['id']?></td>
+						<td><?=$username?></td>
+						<td><?=$job['job_id']?></td>
+						<td><?=$job['requirement']?></td>
+						<td><?=($job['type'] == 1 ? number_format($job['reward'], 0).' VIP days' : ($job['type'] == 2 ? get_currency_symbol($config['currency_code']).$job['reward'] : number_format($job['reward'], 0).' coins'))?></td>
+						<td class="center"><?=($job['status'] == 2 ? '<font color="red">Rejected</font>' : ($job['status'] == 1 ? '<font color="green">Complete</font>' : '<font color="blue">Pending</font>'))?></td>
+						<td><?=date('d M Y - H:i', $job['time'])?></td>
+					    <?php		
+						if($job[status] == 0) {?>
+						    
+						<td><a href="?page=completed_job&accept=<?=$job['id']?>">Accept</a></td>
+						<td><a href="?page=completed_job&reject=<?=$job['id']?>">Reject</a></td>
+						<?php }
+						else{ 
+						  echo '<td colspan="2" style="text-align: center">N/A</td>';
+
+						?>
+						<?php }?>
+
+					
+					</tr>
+					<?php }
+					
+				
+					?>
+				</tbody>
+			</table>
+        </div>    
+</div>
+</div>
+</main>
