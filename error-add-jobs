@@ -1,0 +1,246 @@
+<?php
+if(! defined('BASEPATH') ){ exit('Unable to view file.'); }
+
+
+
+if(isset($_POST['add'])){
+	$title = $db->EscapeString($_POST['title']);
+	$description = htmlentities(htmlspecialchars($_POST['description'])); 
+	$requirement = $db->EscapeString($_POST['requirement']);
+	$type = $db->EscapeString($_POST['type']);
+	$reward = $db->EscapeString($_POST['reward']);
+	$daily_clicks = $db->EscapeString($_POST['daily_clicks']);
+	$max_clicks = $db->EscapeString($_POST['max_clicks']);
+	$choseCountries=htmlentities(htmlspecialchars($_POST['choseCountries']));
+	
+	$gender = $db->EscapeString($_POST['gender']);
+	$select_countries =  $db->EscapeString($_POST['select-countries']);
+	if($select_countries != 1){
+	    $choseCountries='all';
+	}else{
+	    $choseCountries=htmlentities(htmlspecialchars($_POST['choseCountries']));
+
+	}
+	$user_id = $data['id'];
+	$status = "under_review";
+	$user_coins = $data['coins'];
+	
+
+	if($user_coins > $reward){
+	   $errMessage = '<div class="alert error"><span class="icon"></span><strong>ERROR:</strong> You dont have enough coins!</div>';
+
+	}
+
+	if(!empty($title ) && !empty($description) && !empty($requirement) && !empty($reward)){
+		$db->Query("INSERT INTO `jobs`(`user_job_id`,`title`,`description`,`requirement`,`reward`,`type`,`time`,`status`,`daily_clicks`,`gender`,`max_clicks`,`choseCountries`,`select_countries`) VALUES ('".$user_id."', '".$title."', '".$description."', '".$requirement."', '".$reward."', '".$type."','".time()."', '".$status."', '".$daily_clicks."','".$gender."','".$max_clicks."','".$choseCountries."','".$select_countries."')");
+		$errMessage = '<div class="alert success"><span class="icon"></span><strong>SUCCESS:</strong> Job was successfully added!</div>';
+	}else{
+		$errMessage = '<div class="alert error"><span class="icon"></span><strong>ERROR:</strong> You have to complete all fields!</div>';
+	}
+
+
+}
+$cpc_contry = $config['cpc_country'];
+$countries = $db->QueryFetchArrayAll("SELECT * FROM `list_countries` ORDER BY country");
+
+$target_system = true;
+?>
+
+<main role="main" class="container">
+      <div class="row">
+        <?php 
+            require_once(BASE_PATH.'/template/'.$config['theme'].'/common/sidebar.php');
+        ?>
+        <div class="col-md-9">
+            
+            <div class="my-3 p-3 bg-white rounded box-shadow box-style">
+                <div id="blue-box">
+                    <div class="title">
+                        <?=$lang['b_403']?>
+                    </div>
+                    <div class="content">
+                        <div class="text-center bt-5" style="margin-bottom: 15px;">
+                            <a style="width:150px" href="?page=jobs" class="btn btn-primary">View All Jobs</a>
+                            <a style="width:150px" href="?page=add_job" class="btn btn-primary">Add Jobs</a>
+                            <a style="width:150px" href="?page=view_job" class="btn btn-primary">View My Jobs</a>
+                            <a style="width:150px" href="?page=jobs_did" class="btn btn-primary">Jobs I did</a>
+                            <a style="width:150px" href="?page=completed_job" class="btn btn-primary">Completed Job</a>
+                        </div>
+                    </div>
+            
+            <form action="" method="post" class="box"><?=$errMessage?>
+            
+            <div class="form-group col-md-12">
+            <label><strong>Title</strong></label>
+            <input class='form-control' type="text" name="title" placeholder="Download App / Sign up / Click on Ads" required />
+            </div>
+            
+            <div class="form-group col-md-12">
+            <label><strong>Description - Requirement</strong></label>
+            <textarea cols="30" rows="10" class="form-control" name="description"></textarea>  
+
+            </div>
+            
+            <div class="form-group col-md-12">
+            <label for="daily_clicks"><strong>Proof Submit</strong></label>
+            <textarea cols="30" rows="1" class="form-control" name="requirement" placeholder="URL of the proof"></textarea>
+            </div>
+            
+          
+            
+            <div style='display:none;'><select type="text" name="reward" required><option value="0">Coins</option></select></div>
+
+            
+               <div class="form-group col-md-12">
+            <label><strong>Nanis</strong></label>
+            <select name="reward" required>
+                                    <?php 
+                    for($i=5;$i<=50;$i+=5){
+                        
+                        echo "<option>$i</option>";
+                    }
+                    
+                    ?>
+
+            </select>
+            </div>
+            
+            
+           <!-- <div class="my-3 p-3 bg-white rounded box-shadow box-style">
+            	    <div class="form-row">
+							<div class="form-group col-md-6">
+							  <label for="daily_clicks"><?=$lang['b_347']?></label>
+							  <input type="text" class="form-control" name="daily_clicks" id="daily_clicks" disabled />
+							</div>
+							<div class="form-group col-md-6">
+							  <label for="dailyLimitSelect">&nbsp;</label>
+							  <select name="daily_clicks_switch" id="dailyLimitSelect" class="form-control w-50">
+								<option value="0"><?=$lang['b_77']?></option>
+								<option value="1"><?=$lang['b_76']?></option>
+							  </select>
+							</div>
+						  </div>
+						  <div class="form-row">
+							<div class="form-group col-md-6">
+							  <label for="max_clicks"><?=$lang['b_348']?></label>
+							  <input type="text" class="form-control" name="max_clicks" id="max_clicks" disabled />
+							</div>
+							<div class="form-group col-md-6">
+							  <label for="totalLimitSelect">&nbsp;</label>
+							  <select name="max_clicks_switch" id="totalLimitSelect" class="form-control w-50">
+								<option value="0"><?=$lang['b_77']?></option>
+								<option value="1"><?=$lang['b_76']?></option>
+							  </select>
+							</div>
+						  </div> -->
+						  
+					 <?php if($target_system){ ?>
+						  <div class="form-group col-md-12">
+							<div>
+							  <label for="max_clicks"><strong><?=$lang['b_213']?></strong></label>
+							 <!-- <select name="gender" id ="gender" class="form-control">
+								<option value="0"><?=$lang['b_214']?></option>
+								<option value="Men"><?=$lang['b_215']?></option>
+								<option value="Women"><?=$lang['b_216']?></option>
+							  </select> -->
+								<strong><?=$lang['b_217']?></strong>
+							  <select name="select-countries" class="form-control" id="select-countries">
+								<option value="0"><?=$lang['b_218']?></option>
+								<option value="1"><?=$lang['b_344']?></option>
+							  </select>
+							  <!--<small id="emailHelp" class="form-text text-muted">Select Countries cost you ( <?php echo $cpc_contry; ?> ) Nanis.</small>-->
+							   <div id="target-select" class="mt-2" style="display:none;">
+								<select id="choseCountries" name="choseCountries" class="form-control" data-placeholder="<?=$lang['b_345']?>..." name="countries[]"  multiple data-live-search="true">
+									<?php
+										foreach($countries as $country){
+											echo '<option value="'.$country['code'].'">'.$country['country'].'</option>';
+										}
+									?>
+								</select>
+								<small id="emailHelp" class="form-text text-muted">To select multi Countries press CRL+Country.</small>
+							 </div>
+                            </div>
+						  </div>
+						 <?php }?>
+			</div>
+			
+								<input class="btn-block btn btn-success" type="submit" value="Add Job" name="add" style="width: 50%;margin: auto;">
+								</form>
+
+            
+            
+            
+            
+            
+            
+ <!--           <section id="content" class="container_12 clearfix"><?=$errMessage?>-->
+
+ <!--           	<div class="grid_12">-->
+	<!--	<form action="" method="post" class="box">-->
+	<!--		<div class="header">-->
+			
+
+	<!--			<h2 class='text-center'>Add Job</h2>-->
+	<!--		</div>-->
+	<!--		<div class="content">-->
+	<!--			<div class="row">-->
+	<!--				<label><strong>Title</strong></label>-->
+	<!--				<div><input style='width:500px' type="text" name="title" placeholder="Create youtube video / blog post / banner ads" required /></div>-->
+	<!--			</div>-->
+	<!--			<div class="row">-->
+	<!--				<label><strong>Description &amp; Requirements</strong></label>-->
+	<!--				<div><textarea style='width:500px' class="editor" name="description" id="description" required /></textarea></div>-->
+	<!--			</div>-->
+	<!--			<div class="row">-->
+	<!--				<label><strong>Requirement</strong></label>-->
+	<!--				<div><input style='width:500px' type="text" name="requirement" placeholder="URL of the video / blog post / website ads" required /></div>-->
+	<!--			</div>-->
+	<!--			<div class="row">-->
+	<!--				<label><strong>Reward Type</strong></label>-->
+	<!--				<div><select type="text" name="reward" required><option value="0">Coins</option></select></div>-->
+	<!--			</div>-->
+	<!--			<div class="row">-->
+	<!--				<label><strong>Reward</strong></label>-->
+	<!--				<div><input type="text" name="reward" placeholder="100" required /></div>-->
+	<!--			</div>-->
+	<!--		</div>-->
+	<!--		<div class="actions">-->
+	<!--			<div class="right">-->
+	<!--				<input class='btn-block btn btn-primary' type="submit" value="Add Job" name="add" />-->
+	<!--			</div>-->
+	<!--		</div>-->
+	<!--	</form>-->
+	<!--</div>-->
+	<!--</section>-->
+
+            </div>
+
+        </div>
+        </div>
+  
+</main>
+<script>
+	$('#select-countries').on('change', function(e) {
+			if ($(this).val() == '0') {
+				$('#target-select').hide()
+			} else {
+				$('#target-select').show()
+			}
+		});
+
+	$('#dailyLimitSelect').on('change', function(e) {
+			if ($(this).val() == '0') {
+				$("#daily_clicks").prop('disabled', true).val('')
+			} else {
+				$("#daily_clicks").prop('disabled', false).val('100')
+			}
+		});
+		$('#totalLimitSelect').on('change', function(e) {
+			if ($(this).val() == '0') {
+				$("#max_clicks").prop('disabled', true).val('')
+			} else {
+				$("#max_clicks").prop('disabled', false).val('1000')
+			}
+		});
+	</script>
+
