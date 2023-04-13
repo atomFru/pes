@@ -1,0 +1,121 @@
+<?php
+if(! defined('BASEPATH') ){ exit('Unable to view file.'); }
+if(isset($_GET['edit'])){
+   $id = $db->EscapeString($_GET['edit']);
+   $jobs = $db->QueryFetchArrayAll("SELECT * FROM `jobs` WHERE `id` = '$id'");
+   foreach($jobs as $job){
+        $id = $job['id'];
+        $title = $job['title'];
+        $description = $job['description'];
+        $requirement = $job['requirement']; 
+        $type = $job['type'];
+        $reward = $job['reward'];
+
+
+   }
+   
+}
+
+if(isset($_POST['edit'])){
+	$title = $db->EscapeString($_POST['title']);
+	$description = htmlentities(htmlspecialchars($_POST['description']));
+	$requirement = $db->EscapeString($_POST['requirement']);
+	$type = $db->EscapeString($_POST['type']);
+	$reward = $db->EscapeString($_POST['reward']);
+	$user_id = $data['id'];
+	
+
+
+	if(!empty($title ) && !empty($description) && !empty($requirement)){
+		$db->Query("UPDATE `jobs` SET `title`='".$title."', `description`='".$description."', `requirement`='".$requirement."', `type`='".$type."', `reward`='".$reward."' WHERE `id`='".$id."'");
+		$errMessage = '<div class="bg-success text-dark text-center"><span class="icon"></span><strong>SUCCESS:</strong> Job was successfully edited!</div>';
+	}else{
+		$errMessage = '<div class="bg-danger text-dark text-center"><span class="icon"></span><strong>ERROR:</strong> You have to complete all fields!</div>';
+	}
+
+
+}
+if(isset($_GET['delete'])){
+    echo "asda";
+    $del = $db->EscapeString($_GET['delete']);
+	$db->Query("DELETE FROM `jobs` WHERE `id`='".$del."'");
+}
+?>
+
+<main role="main" class="container">
+      <div class="row">
+        <?php 
+            require_once(BASE_PATH.'/template/'.$config['theme'].'/common/sidebar.php');
+        ?>
+        <div class="col-md-9">
+            
+            <div class="my-3 p-3 bg-white rounded box-shadow box-style">
+                <div id="blue-box">
+                    <div class="title">
+                        <?=$lang['b_403']?>
+                    </div>
+                    <div class="content">
+                        <div class="text-center bt-4" style="margin-bottom: 15px;">
+                            <a style="width:150px" href="?page=jobs" class="btn btn-primary">View Jobs</a>
+                         
+                            <a style="width:150px" href="?page=add_job" class="btn btn-primary">Add Jobs</a>
+                            <a style="width:150px" href="?page=view_job" class="btn btn-primary">View My Jobs</a>
+                            <a style="width:150px" href="?page=jobs_did" class="btn btn-primary">Jobs I did</a>
+                            <a style="width:150px" href="?page=completed_job" class="btn btn-primary">Completed Job</a>
+                            
+                        </div>
+                    </div>
+                    
+            <section id="content" class="container_12 clearfix"><?=$errMessage?>
+
+            	<div class="grid_12">
+            	   
+		<form action="" method="post" class="box">
+			<div class="header">
+			 
+
+				<h2 class='text-center'>Edit Job</h2>
+			</div>
+			<div class="content">
+				<div class="row">
+					<label><strong>Title</strong></label>
+					<textarea style='width:500px' type="text" name="title" required /><?php echo $title  ?></textarea>
+				</div>
+				<div class="row">
+					<label><strong>Description</strong></label>
+					<div><textarea style='width:500px' class="editor" name="description" id="description" required /><?php echo $description?> </textarea></div>
+				</div>
+				<div class="row">
+					<label><strong>Requirement</strong></label>
+					<textarea style='width:500px' type="text" name="requirement" required /><?php echo $requirement?> </textarea>
+				</div>
+				
+				<div class="row">
+                    <label><strong>Nanis</strong></label>
+                    <select name="reward" required>
+                                            <?php 
+                            for($i=5;$i<=50;$i+=5){
+                                
+                                echo "<option>$i</option>";
+                            }
+                            
+                            ?>
+        
+                    </select>
+                </div>
+			</div>
+			<div class="actions">
+				<div class="right">
+					<input class='btn-block btn btn-success' type="submit" value="Edit Job" name="edit" style="width: 50%;margin: auto;" />
+				</div>
+			</div>
+		</form>
+	</div>
+	</section>
+
+            </div>
+</div>
+        </div
+  
+</main>
+
